@@ -3,6 +3,7 @@ package ssh
 import (
 	"gopkg.in/yaml.v2"
 	"gorm.io/driver/sqlite" // Sqlite driver based on GGO
+	"gorm.io/gorm/logger"
 	"io/ioutil"
 	"password-tool/settings"
 	"path"
@@ -24,7 +25,7 @@ type Struct struct {
 
 func init() {
 	// github.com/mattn/go-sqlite3
-	db, _ = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true})
+	db, _ = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{DisableForeignKeyConstraintWhenMigrating: true, Logger: logger.Default.LogMode(logger.Silent)})
 	err := db.AutoMigrate(&Model{})
 	//err := db.Migrator().CreateTable(&Model{})
 	if err != nil {

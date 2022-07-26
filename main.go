@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"password-tool/repo"
+	"password-tool/ssh"
 
 	"github.com/urfave/cli/v2"
 )
@@ -17,8 +18,9 @@ func main() {
 				Usage:   "数据存储的代码仓库",
 				Subcommands: []*cli.Command{
 					{
-						Name:  "add",
-						Usage: "新增数据存储的代码仓库",
+						Name:    "add",
+						Aliases: []string{"a"},
+						Usage:   "新增数据存储的代码仓库",
 						Flags: []cli.Flag{
 							&cli.BoolFlag{
 								Name:  "default",
@@ -54,16 +56,17 @@ func main() {
 							defaultRepo := cCtx.Bool("default")
 							err := repo.Add(name, url, defaultRepo)
 							if err != nil {
-								fmt.Println("新增代码仓库失败:", err)
+								return cli.Exit("新增代码仓库失败: "+err.Error(), 1)
 							} else {
-								fmt.Println("已成功代码仓库成功")
+								fmt.Println("已添加代码仓库成功")
+								return nil
 							}
-							return err
 						},
 					},
 					{
-						Name:  "remove",
-						Usage: "移除数据存储的代码仓库",
+						Name:    "remove",
+						Aliases: []string{"rm", "del", "delete"},
+						Usage:   "移除数据存储的代码仓库",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:        "name",
@@ -78,21 +81,34 @@ func main() {
 							}
 							if name == "" {
 								fmt.Println("请指定移除仓库名称")
-								return fmt.Errorf("缺少参数")
+								return cli.Exit("缺少参数", 2)
 							}
-							return repo.Delete(name)
+							err := repo.Delete(name)
+							if err != nil {
+								return cli.Exit("移除代码仓库失败: "+err.Error(), 1)
+							} else {
+								fmt.Println("移除代码仓库成功")
+								return nil
+							}
 						},
 					},
 					{
-						Name:  "list",
-						Usage: "数据存储的代码仓库列表",
+						Name:    "list",
+						Usage:   "数据存储的代码仓库列表",
+						Aliases: []string{"ls", "l"},
 						Action: func(cCtx *cli.Context) error {
-							return repo.List()
+							err := repo.List()
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								return nil
+							}
 						},
 					},
 					{
-						Name:  "set-default",
-						Usage: "设置某个代码仓库为默认的数据存储仓库",
+						Name:    "set-default",
+						Aliases: []string{"sd", "default", "setD"},
+						Usage:   "设置某个代码仓库为默认的数据存储仓库",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:  "name",
@@ -110,22 +126,40 @@ func main() {
 								fmt.Println("请指定默认仓库名称")
 								return fmt.Errorf("缺少参数")
 							}
-							return repo.SetDefault(name)
+							err := repo.SetDefault(name)
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								fmt.Println("设置默认仓库成功")
+								return nil
+							}
 						},
 					},
 					{
 						Name:  "pull",
-						Usage: "将代码仓库数据同步至本地存储。",
+						Usage: "将代码仓库数据同步至本地存储。默认同步的仓库是默认仓库",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
 								Name:        "name",
 								Usage:       "需要同步的代码仓库的名称标识。",
 								DefaultText: "repo1",
 							},
+							&cli.BoolFlag{
+								Name:    "recursive",
+								Aliases: []string{"r"},
+								Usage:   "是否递归同步所有仓库。",
+								Value:   false,
+							},
 						},
 						Action: func(cCtx *cli.Context) error {
 							//fmt.Println("removed task template: ", cCtx.Args().First())
-							return repo.Pull(cCtx.String("name"))
+							err := repo.Pull(cCtx.String("name"), cCtx.Bool("recursive"))
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								fmt.Println("将代码仓库数据同步至本地存储成功")
+								return nil
+							}
 						},
 					},
 					{
@@ -137,10 +171,22 @@ func main() {
 								Usage:       "需要同步的代码仓库的名称标识。",
 								DefaultText: "repo1",
 							},
+							&cli.BoolFlag{
+								Name:    "recursive",
+								Aliases: []string{"r"},
+								Usage:   "是否递归同步所有仓库。",
+								Value:   false,
+							},
 						},
 						Action: func(cCtx *cli.Context) error {
 							//fmt.Println("removed task template: ", cCtx.Args().First())
-							return repo.Push(cCtx.String("name"))
+							err := repo.Push(cCtx.String("name"), cCtx.Bool("recursive"))
+							if err != nil {
+								return cli.Exit("代码运行异常: "+err.Error(), 2)
+							} else {
+								fmt.Println("将本地存储的数据同步至代码仓库成功")
+								return nil
+							}
 						},
 					},
 				},
@@ -152,47 +198,144 @@ func main() {
 			{
 				Name:  "ssh",
 				Usage: "ssh",
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:     "lang",
-						Value:    "english",
-						Usage:    "language for the greeting",
-						Required: true,
-					},
-				},
-				Action: func(cCtx *cli.Context) error {
-					fmt.Println("added task: ", cCtx.Args().First())
-					return nil
-				},
-			},
-			{
-				Name:    "complete",
-				Aliases: []string{"c"},
-				Usage:   "complete a task on the list",
-				Action: func(cCtx *cli.Context) error {
-					fmt.Println("completed task: ", cCtx.Args().First())
-					return nil
-				},
-			},
-			{
-				Name:    "template",
-				Aliases: []string{"t"},
-				Usage:   "options for task templates",
 				Subcommands: []*cli.Command{
 					{
-						Name:  "add",
-						Usage: "add a new template",
+						Name:    "add",
+						Aliases: []string{"a"},
+						Usage:   "添加一个ssh配置",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:     "name",
+								Usage:    "配置名称",
+								Required: true,
+							},
+							&cli.StringFlag{
+								Name:     "ip",
+								Usage:    "ssh主机",
+								Required: true,
+							},
+							&cli.IntFlag{
+								Name:  "port",
+								Usage: "ssh端口",
+								Value: 22,
+							},
+							&cli.StringFlag{
+								Name:  "user",
+								Usage: "ssh用户",
+								Value: "root",
+							},
+							&cli.StringFlag{
+								Name:     "password",
+								Usage:    "ssh密码",
+								Required: true,
+							},
+						},
 						Action: func(cCtx *cli.Context) error {
-							fmt.Println("new task template: ", cCtx.Args().First())
-							return nil
+							err := ssh.Add(cCtx.String("name"), cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"))
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								fmt.Println("添加ssh配置成功")
+								return nil
+							}
 						},
 					},
 					{
-						Name:  "remove",
-						Usage: "remove an existing template",
+						Name:    "list",
+						Aliases: []string{"ls", "l"},
+						Usage:   "列出ssh配置",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "search",
+								Usage: "搜索ssh配置关键字",
+							},
+						},
 						Action: func(cCtx *cli.Context) error {
-							fmt.Println("removed task template: ", cCtx.Args().First())
-							return nil
+							keyword := cCtx.String("search")
+							if keyword == "" {
+								keyword = cCtx.Args().First()
+							}
+							err := ssh.List(keyword)
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								return nil
+							}
+						},
+					},
+					{
+						Name:    "update",
+						Aliases: []string{"edit", "e", "u"},
+						Usage:   "更新ssh配置",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "name",
+								Usage: "配置名称",
+								Value: "",
+							},
+							&cli.StringFlag{
+								Name:  "newName",
+								Usage: "新的配置名称",
+								Value: "",
+							},
+							&cli.StringFlag{
+								Name:  "ip",
+								Usage: "ssh主机",
+								Value: "",
+							},
+							&cli.IntFlag{
+								Name:  "port",
+								Usage: "ssh端口",
+								Value: 0,
+							},
+							&cli.StringFlag{
+								Name:  "user",
+								Usage: "ssh用户",
+								Value: "",
+							},
+							&cli.StringFlag{
+								Name:  "password",
+								Usage: "ssh密码",
+								Value: "",
+							},
+						},
+						Action: func(cCtx *cli.Context) error {
+							name := cCtx.String("name")
+							if name == "" {
+								name = cCtx.Args().First()
+							}
+							err := ssh.Update(name, cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"), cCtx.String("newName"))
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								fmt.Println("更新ssh配置成功")
+								return nil
+							}
+						},
+					},
+					{
+						Name:    "remove",
+						Aliases: []string{"rm", "delete", "d", "del"},
+						Usage:   "删除ssh配置",
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:  "name",
+								Usage: "配置名称",
+								Value: "",
+							},
+						},
+						Action: func(cCtx *cli.Context) error {
+							name := cCtx.String("name")
+							if name == "" {
+								name = cCtx.Args().First()
+							}
+							err := ssh.Delete(name)
+							if err != nil {
+								return cli.Exit(err.Error(), 2)
+							} else {
+								fmt.Println("删除ssh配置成功")
+								return nil
+							}
 						},
 					},
 				},
