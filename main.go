@@ -10,7 +10,16 @@ import (
 )
 
 func main() {
+
+	cli.VersionFlag = &cli.BoolFlag{
+		Name:    "print-version",
+		Aliases: []string{"V", "version", "v"},
+		Usage:   "版本信息",
+	}
+
 	app := &cli.App{
+		Version:              "v3.1",
+		EnableBashCompletion: true,
 		Commands: []*cli.Command{
 			{
 				Name:    "repo",
@@ -225,9 +234,9 @@ func main() {
 								Value: "root",
 							},
 							&cli.StringFlag{
-								Name:     "password",
-								Usage:    "ssh密码",
-								Required: true,
+								Name:  "password",
+								Usage: "ssh密码",
+								Value: "",
 							},
 						},
 						Action: func(cCtx *cli.Context) error {
@@ -338,6 +347,146 @@ func main() {
 							}
 						},
 					},
+				},
+			},
+			{
+				Name:    "add",
+				Aliases: []string{"a"},
+				Usage:   "添加一个ssh配置",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:     "name",
+						Usage:    "配置名称",
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:     "ip",
+						Usage:    "ssh主机",
+						Required: true,
+					},
+					&cli.IntFlag{
+						Name:  "port",
+						Usage: "ssh端口",
+						Value: 22,
+					},
+					&cli.StringFlag{
+						Name:  "user",
+						Usage: "ssh用户",
+						Value: "root",
+					},
+					&cli.StringFlag{
+						Name:  "password",
+						Usage: "ssh密码",
+						//Required: true,
+						Value: "",
+					},
+				},
+				Action: func(cCtx *cli.Context) error {
+					err := ssh.Add(cCtx.String("name"), cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"))
+					if err != nil {
+						return cli.Exit(err.Error(), 2)
+					} else {
+						fmt.Println("添加ssh配置成功")
+						return nil
+					}
+				},
+			},
+			{
+				Name:    "list",
+				Aliases: []string{"ls", "l"},
+				Usage:   "列出ssh配置",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "search",
+						Usage: "搜索ssh配置关键字",
+					},
+				},
+				Action: func(cCtx *cli.Context) error {
+					keyword := cCtx.String("search")
+					if keyword == "" {
+						keyword = cCtx.Args().First()
+					}
+					err := ssh.List(keyword)
+					if err != nil {
+						return cli.Exit(err.Error(), 2)
+					} else {
+						return nil
+					}
+				},
+			},
+			{
+				Name:    "update",
+				Aliases: []string{"edit", "e", "u"},
+				Usage:   "更新ssh配置",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "name",
+						Usage: "配置名称",
+						Value: "",
+					},
+					&cli.StringFlag{
+						Name:  "newName",
+						Usage: "新的配置名称",
+						Value: "",
+					},
+					&cli.StringFlag{
+						Name:  "ip",
+						Usage: "ssh主机",
+						Value: "",
+					},
+					&cli.IntFlag{
+						Name:  "port",
+						Usage: "ssh端口",
+						Value: 0,
+					},
+					&cli.StringFlag{
+						Name:  "user",
+						Usage: "ssh用户",
+						Value: "",
+					},
+					&cli.StringFlag{
+						Name:  "password",
+						Usage: "ssh密码",
+						Value: "",
+					},
+				},
+				Action: func(cCtx *cli.Context) error {
+					name := cCtx.String("name")
+					if name == "" {
+						name = cCtx.Args().First()
+					}
+					err := ssh.Update(name, cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"), cCtx.String("newName"))
+					if err != nil {
+						return cli.Exit(err.Error(), 2)
+					} else {
+						fmt.Println("更新ssh配置成功")
+						return nil
+					}
+				},
+			},
+			{
+				Name:    "remove",
+				Aliases: []string{"rm", "delete", "d", "del"},
+				Usage:   "删除ssh配置",
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "name",
+						Usage: "配置名称",
+						Value: "",
+					},
+				},
+				Action: func(cCtx *cli.Context) error {
+					name := cCtx.String("name")
+					if name == "" {
+						name = cCtx.Args().First()
+					}
+					err := ssh.Delete(name)
+					if err != nil {
+						return cli.Exit(err.Error(), 2)
+					} else {
+						fmt.Println("删除ssh配置成功")
+						return nil
+					}
 				},
 			},
 		},

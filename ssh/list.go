@@ -9,7 +9,7 @@ import (
 func List(keyword string) error {
 	var configs []Model
 	if keyword != "" {
-		db.Where("name like ? OR ip = ?", "%"+keyword+"%", keyword).Find(&configs)
+		db.Where("name like ? OR ip = ?", "%"+keyword+"%", "%"+keyword+"%").Find(&configs)
 	} else {
 		db.Find(&configs)
 	}
