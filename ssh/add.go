@@ -9,7 +9,7 @@ import (
 	"path"
 )
 
-func Add(name, ip string, port int, user string, password string) error {
+func Add(name, host string, port int, user string, password string) error {
 	result := db.First(&Model{}, "name = ?", name)
 	if result.RowsAffected > 0 {
 		return fmt.Errorf("名称为: %s 的配置已存在", name)
@@ -17,7 +17,7 @@ func Add(name, ip string, port int, user string, password string) error {
 
 	s := Struct{
 		Name:     name,
-		Ip:       ip,
+		Host:     host,
 		Password: password,
 		Port:     port,
 		User:     user,

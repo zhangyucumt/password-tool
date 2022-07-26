@@ -10,7 +10,7 @@ import (
 	"path"
 )
 
-func Update(name, ip string, port int, user string, password string, newName string) error {
+func Update(name, host string, port int, user string, password string, newName string) error {
 	if _, err := os.Stat(path.Join(settings.Settings.DefaultRepoPath, "ssh", name+".yaml")); err != nil {
 		return fmt.Errorf("配置不存在: %s", name)
 	}
@@ -24,8 +24,8 @@ func Update(name, ip string, port int, user string, password string, newName str
 	if err != nil {
 		return err
 	}
-	if ip != "" {
-		s.Ip = ip
+	if host != "" {
+		s.Host = host
 	}
 	if port != 0 {
 		s.Port = port

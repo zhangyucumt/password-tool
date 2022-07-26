@@ -40,13 +40,13 @@ func main() {
 								Name:  "url",
 								Usage: "代码仓库的地址。默认应具有代码仓库的读写权限",
 								//Required:    true,
-								DefaultText: "git@github.com:zhangyucumt/password-tool.git",
+								//DefaultText: "git@github.com:zhangyucumt/password-tool.git",
 							},
 							&cli.StringFlag{
 								Name:  "name",
 								Usage: "代码仓库的名称标识。",
 								//Required:    true,
-								DefaultText: "repo1",
+								//DefaultText: "repo1",
 							},
 						},
 						Action: func(cCtx *cli.Context) error {
@@ -78,9 +78,9 @@ func main() {
 						Usage:   "移除数据存储的代码仓库",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
-								Name:        "name",
-								Usage:       "代码仓库的名称标识。",
-								DefaultText: "repo1",
+								Name:  "name",
+								Usage: "代码仓库的名称标识。",
+								//DefaultText: "repo1",
 							},
 						},
 						Action: func(cCtx *cli.Context) error {
@@ -123,7 +123,7 @@ func main() {
 								Name:  "name",
 								Usage: "代码仓库的名称标识。",
 								//Required:    true,
-								DefaultText: "repo1",
+								//DefaultText: "repo1",
 							},
 						},
 						Action: func(cCtx *cli.Context) error {
@@ -149,9 +149,9 @@ func main() {
 						Usage: "将代码仓库数据同步至本地存储。默认同步的仓库是默认仓库",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
-								Name:        "name",
-								Usage:       "需要同步的代码仓库的名称标识。",
-								DefaultText: "repo1",
+								Name:  "name",
+								Usage: "需要同步的代码仓库的名称标识。",
+								//DefaultText: "repo1",
 							},
 							&cli.BoolFlag{
 								Name:    "recursive",
@@ -176,9 +176,9 @@ func main() {
 						Usage: "将本地存储的数据同步至代码仓库。默认同步的仓库是默认仓库",
 						Flags: []cli.Flag{
 							&cli.StringFlag{
-								Name:        "name",
-								Usage:       "需要同步的代码仓库的名称标识。",
-								DefaultText: "repo1",
+								Name:  "name",
+								Usage: "需要同步的代码仓库的名称标识。",
+								//DefaultText: "repo1",
 							},
 							&cli.BoolFlag{
 								Name:    "recursive",
@@ -194,6 +194,22 @@ func main() {
 								return cli.Exit("代码运行异常: "+err.Error(), 2)
 							} else {
 								fmt.Println("将本地存储的数据同步至代码仓库成功")
+								return nil
+							}
+						},
+					},
+					{
+						Name: "merge",
+						//Aliases: []string{"rm", "del", "delete"},
+						Usage: "将其他的代码仓库合并至一个代码仓库中。",
+						Action: func(cCtx *cli.Context) error {
+							repo1 := cCtx.Args().First()
+							repo2 := cCtx.Args().Get(1)
+							err := repo.Merge(repo1, repo2)
+							if err != nil {
+								return cli.Exit("合并代码仓库失败: "+err.Error(), 1)
+							} else {
+								fmt.Println("合并代码仓库成功")
 								return nil
 							}
 						},
@@ -219,7 +235,7 @@ func main() {
 								Required: true,
 							},
 							&cli.StringFlag{
-								Name:     "ip",
+								Name:     "host",
 								Usage:    "ssh主机",
 								Required: true,
 							},
@@ -240,7 +256,7 @@ func main() {
 							},
 						},
 						Action: func(cCtx *cli.Context) error {
-							err := ssh.Add(cCtx.String("name"), cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"))
+							err := ssh.Add(cCtx.String("name"), cCtx.String("host"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"))
 							if err != nil {
 								return cli.Exit(err.Error(), 2)
 							} else {
@@ -288,7 +304,7 @@ func main() {
 								Value: "",
 							},
 							&cli.StringFlag{
-								Name:  "ip",
+								Name:  "host",
 								Usage: "ssh主机",
 								Value: "",
 							},
@@ -313,7 +329,7 @@ func main() {
 							if name == "" {
 								name = cCtx.Args().First()
 							}
-							err := ssh.Update(name, cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"), cCtx.String("newName"))
+							err := ssh.Update(name, cCtx.String("host"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"), cCtx.String("newName"))
 							if err != nil {
 								return cli.Exit(err.Error(), 2)
 							} else {
@@ -360,7 +376,7 @@ func main() {
 						Required: true,
 					},
 					&cli.StringFlag{
-						Name:     "ip",
+						Name:     "host",
 						Usage:    "ssh主机",
 						Required: true,
 					},
@@ -382,7 +398,7 @@ func main() {
 					},
 				},
 				Action: func(cCtx *cli.Context) error {
-					err := ssh.Add(cCtx.String("name"), cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"))
+					err := ssh.Add(cCtx.String("name"), cCtx.String("host"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"))
 					if err != nil {
 						return cli.Exit(err.Error(), 2)
 					} else {
@@ -430,7 +446,7 @@ func main() {
 						Value: "",
 					},
 					&cli.StringFlag{
-						Name:  "ip",
+						Name:  "host",
 						Usage: "ssh主机",
 						Value: "",
 					},
@@ -455,7 +471,7 @@ func main() {
 					if name == "" {
 						name = cCtx.Args().First()
 					}
-					err := ssh.Update(name, cCtx.String("ip"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"), cCtx.String("newName"))
+					err := ssh.Update(name, cCtx.String("host"), cCtx.Int("port"), cCtx.String("user"), cCtx.String("password"), cCtx.String("newName"))
 					if err != nil {
 						return cli.Exit(err.Error(), 2)
 					} else {

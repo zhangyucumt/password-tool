@@ -17,7 +17,7 @@ var db *gorm.DB
 
 type Struct struct {
 	Name     string `yaml:"name" json:"name"`
-	Ip       string `yaml:"ip" json:"ip"`
+	Host     string `yaml:"host" json:"host"`
 	Password string `yaml:"password" json:"password"`
 	Port     int    `yaml:"port" json:"port"`
 	User     string `yaml:"user" json:"user"`
@@ -54,7 +54,7 @@ func init() {
 		}
 		db.Create(&Model{
 			Name:     s.Name,
-			Ip:       s.Ip,
+			Host:     s.Host,
 			Password: s.Password,
 			Port:     s.Port,
 			User:     s.User,
