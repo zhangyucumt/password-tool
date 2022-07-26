@@ -18,7 +18,7 @@ func main() {
 	}
 
 	app := &cli.App{
-		Version:              "v3.1",
+		Version:              "v1.0.0.dev",
 		EnableBashCompletion: true,
 		Commands: []*cli.Command{
 			{
